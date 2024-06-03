@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<canvas id="canvas" width="600" height="600"></canvas>
+	<img src="" id="img" alt="">
+	<button onclick="save()">保存</button>
+</body>
+</html>
+
+<script>
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	
+	var imageA = new Image();
+	var imageB = new Image();
+	
+	imageA.onload = function() {
+	  imageB.onload = function() {
+	    // 将图片 B 设置为蒙版
+	    ctx.drawImage(imageB, 0, 0);
+	
+	    // 使用蒙版
+	    ctx.globalCompositeOperation = 'source-in';
+	    ctx.drawImage(imageA, 0, 0);
+	
+	    // 恢复默认的合成操作
+	    ctx.globalCompositeOperation = 'source-over';
+	  };
+	
+	imageB.src = 'https://hr1249412130.gitee.io/canvas-stamp/myImage.png'; // 图片 B URL
+	};
+	
+	imageA.src = 'https://z1.ax1x.com/2023/12/08/pi2FWCD.png'; // 图片 A URL
+	
+
+	
+</script>

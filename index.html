@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="js/vue.js"></script>
+		<script src="js/element.js"></script>
+		<link rel="stylesheet" href="css/index.css">
+		<link rel="stylesheet" href="css/element.css">
+		<title>Document</title>
+	</head>
+	<body>
+		<div id="app">
+			<div style="margin-bottom: 40px;font-weight: bold;">警告:本站在线生成图片仅供娱乐，请勿用于违法行为.本或不提供私刻、定制公章业务，请勿咨询此类业务，谢谢!</div>
+			<div style="display: flex;width: 100%;gap:40px">
+				<div style="flex:1">
+					主文字:
+					<el-input v-model="defautl_text" @change="change" placeholder="请输入内容"></el-input>
+					字体间距:
+					<el-slider v-model="font_margin" @change="change" max="6"></el-slider>
+					字体大小:
+					<el-slider v-model="font_size" @change="change"></el-slider>
+					字体起始角度：
+					<el-slider v-model="font_rote" @change="change" max="100"></el-slider>
+					字体内外间距:
+					<el-slider v-model="in_margin" @change="change"></el-slider>
+					字体:
+					<el-select v-model="font_famil" @change="change">
+						<el-option key="微软雅黑" label="微软雅黑" value="微软雅黑"></el-option>
+						<el-option key="宋体" label="宋体" value="宋体"></el-option>
+						<el-option key="楷体" label="楷体" value="楷体"></el-option>
+					</el-select>
+				</div>
+				<div style="flex:1">
+					副文字:
+					<el-input v-model="deputy_text" @change="change" placeholder="请输入内容"></el-input>
+					字体间距:
+					<el-slider v-model="deputy_magin" @change="change" max="6"></el-slider>
+					字体大小:
+					<el-slider v-model="deputy_size" @change="change"></el-slider>
+					字体起始角度：
+					<el-slider v-model="deputy_font_rote" @change="change" max="100"></el-slider>
+					字体内外间距:{{deputy_in_margin}}
+					<el-slider v-model="deputy_in_margin" @change="change"></el-slider>
+					<!-- 字体: -->
+					<!-- <el-select v-model="font_famil" @change="change">
+						<el-option key="微软雅黑" label="微软雅黑" value="微软雅黑"></el-option>
+						<el-option key="宋体" label="宋体" value="宋体"></el-option>
+						<el-option key="楷体" label="楷体" value="楷体"></el-option>
+					</el-select> -->
+				</div>
+
+				<div style="flex:1">
+					颜色
+					<div>
+						<el-color-picker v-model="line_color" @change="change"></el-color-picker>
+					</div>
+					圆大小:
+					<el-slider v-model="yuan_size" @change="change" max="30"></el-slider>
+					圆线条粗细:
+					<el-slider v-model="line_bold" @change="change" max="30"></el-slider>
+					<el-button @click="reset">重置</el-button>
+					<el-button @click="generate">生成</el-button>
+					<el-button @click="savePng">保存</el-button>
+				</div>
+
+
+				<div style="flex:1">
+					五角星大小:
+					<el-slider v-model="star_size" @change="change" max="80"></el-slider>
+				</div>
+			</div>
+
+		</div>
+		<div style="display: flex;">
+			<div>
+				<div>预览:</div>
+				<canvas width="600" height="600" id="canvas" ref="canvas"></canvas>
+			</div>
+
+			<div>
+				<div>最终效果:</div>
+				<canvas width="600px" height="600px" id="canvas-two"></canvas>
+			</div>
+		</div>
+	</body>
+</html>
+
+<script>
+	const app = new Vue({
+		mounted() {
+			this.createCtx({
+				contetn: '111'
+			})
+			// this.createCtx({lineWidth:this.line_bold,strokeStyle:'red'})
+		},
+		el: "#app",
+		data() {
+			return {
+
+				ctx: null,
+				font_margin: 4,
+				deputy_magin: 2,
+				defautl_text: "XXXX科技有限公司",
+				deputy_text: "202312081152152",
+				line_bold: 5,
+				line_color: 'red',
+				canvas: null,
+				font_size: 30,
+				deputy_size: 20,
+				in_margin: 24,
+				deputy_in_margin: 24,
+				yuan_size: 15,
+				font_rote: 1,
+				deputy_font_rote: 12.5,
+				star_size: 40,
+				font_famil: "宋体",
+			}
+		},
+		methods: {
+			generate() {
+				var canvas = document.getElementById('canvas');
+				var dataURL = canvas.toDataURL('image/png');
+
+
+
+				var canvas_two = document.getElementById('canvas-two');
+				var ctx = canvas_two.getContext('2d');
+				ctx.clearRect(0, 0, 600, 600);
+
+
+				var imageA = new Image();
+				var imageB = new Image();
+
+				imageA.onload = function() {
+					imageB.onload = function() {
+						// 将图片 B 设置为蒙版
+						ctx.drawImage(imageB, 0, 0);
+
+						// 使用蒙版
+						ctx.globalCompositeOperation = 'source-in';
+						ctx.drawImage(imageA, 0, 0);
+
+						// 恢复默认的合成操作
+						ctx.globalCompositeOperation = 'source-over';
+					};
+
+					imageB.src = dataURL; // 图片 B URL
+				};
+
+				imageA.src = './static/I.png'; // 图片 A URL
+			},
+			savePng() {
+				var canvas = document.getElementById('canvas-two');
+				var dataURL = canvas.toDataURL('image/png');
+				var link = document.createElement('a');
+				link.download = 'myImage.png';
+				link.href = dataURL;
+				link.click();
+			},
+			reset() {
+				this.font_margin = 4
+				this.deputy_magin = 2
+				this.defautl_text = "XXXX科技有限公司"
+				this.deputy_text = "202312081152152"
+				this.line_bold = 5
+				this.line_color = 'red'
+				this.canvas = null
+				this.font_size = 30
+				this.deputy_size = 20
+				this.in_margin = 24
+				this.deputy_in_margin = 24
+				this.yuan_size = 15
+				this.font_rote = 1
+				this.deputy_font_rote = 12.5
+				this.star_size = 40
+				this.font_famil = "宋体"
+				console.log('asdas ')
+				this.createCtx()
+			},
+			createCtx() {
+
+				let canvas = document.getElementById('canvas');
+				this.ctx = canvas.getContext('2d');
+				this.ctx.clearRect(0, 0, 600, 600);
+
+
+				// 字体的样式控制
+				const centerX = 300;
+				const centerY = 300;
+				const radius = this.in_margin * 5;
+				const text = (this.defautl_text || '默认字体');
+				this.ctx.fillStyle = this.line_color
+				this.ctx.font = `${this.font_size}px ${this.font_famil}`;
+				this.ctx.textAlign = 'center';
+				this.ctx.textBaseline = 'middle';
+				this.ctx.beginPath();
+				this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+				this.ctx.strokeStyle = this.line_color;
+				// this.ctx.stroke();
+				this.ctx.closePath();
+				const characters = text.split('');
+				const angleStep = (this.font_margin || 1) / characters.length;
+				const startAngle = (this.font_rote * 0.2 * -1);; // 起始角度
+
+				characters.forEach((char, index) => {
+					const angle = startAngle + index * angleStep;
+					const charX = centerX + Math.cos(angle) * radius;
+					const charY = centerY + Math.sin(angle) * radius;
+
+					this.ctx.save(); // 保存当前绘图状态
+
+					// 计算文字旋转角度，让文字头朝外，底部朝向圆心
+					this.ctx.translate(charX, charY);
+					this.ctx.rotate(angle + Math.PI / 2); // 文字顺时针旋转 90 度
+					this.ctx.translate(-charX, -charY);
+
+					this.ctx.fillText(char, charX, charY);
+
+					this.ctx.restore(); // 恢复之前保存的绘图状态
+				});
+
+				// 副字体的样式控制
+				const centerXs = 300;
+				const centerYs = 300;
+				const radiuss = this.deputy_in_margin * 5;
+				const texts = (this.deputy_text || '默认字体');
+				this.ctx.fillStyle = this.line_color
+				this.ctx.font = `${this.deputy_size}px ${this.font_famil}`;
+				this.ctx.textAlign = 'center';
+				this.ctx.textBaseline = 'middle';
+				this.ctx.beginPath();
+				this.ctx.arc(centerXs, centerYs, radiuss, 0, Math.PI * 2);
+				this.ctx.strokeStyle = this.line_color;
+				// this.ctx.stroke();
+				this.ctx.closePath();
+				const characterss = texts.split('');
+				const angleSteps = (this.deputy_magin || 1) / characterss.length;
+				const startAngles = (this.deputy_font_rote * 0.2 * -1);; // 起始角度
+
+				characterss.forEach((char, index) => {
+					const angle = startAngles + index * angleSteps;
+					const charX = centerXs + Math.cos(angle) * radiuss;
+					const charY = centerYs + Math.sin(angle) * radiuss;
+
+					this.ctx.save(); // 保存当前绘图状态
+
+					// 计算文字旋转角度，让文字头朝外，底部朝向圆心
+					this.ctx.translate(charX, charY);
+					this.ctx.rotate(angle + Math.PI / 2); // 文字顺时针旋转 90 度
+					this.ctx.translate(-charX, -charY);
+
+					this.ctx.fillText(char, charX, charY);
+
+					this.ctx.restore(); // 恢复之前保存的绘图状态
+				});
+
+				// 圆样式控制
+				const centerX_yuan = 300;
+				const centerY_yuan = 300;
+				const radius_yuan = this.yuan_size * 10;
+				this.ctx.beginPath();
+				this.ctx.lineWidth = this.line_bold;
+				this.ctx.arc(centerX_yuan, centerY_yuan, radius_yuan, 0, Math.PI * 2);
+				this.ctx.strokeStyle = this.line_color;
+				this.ctx.stroke();
+				this.ctx.closePath();
+
+				// 五角星样式
+				const drawStar = (cx, cy, spikes, outerRadius, innerRadius) => {
+					let rot = Math.PI / 2 * 3;
+					let x = cx;
+					let y = cy;
+					const step = Math.PI / spikes;
+
+					this.ctx.beginPath();
+					this.ctx.moveTo(cx, cy - outerRadius);
+
+					for (let i = 0; i < spikes; i++) {
+						x = cx + Math.cos(rot) * outerRadius;
+						y = cy + Math.sin(rot) * outerRadius;
+						this.ctx.lineTo(x, y);
+						rot += step;
+
+						x = cx + Math.cos(rot) * innerRadius;
+						y = cy + Math.sin(rot) * innerRadius;
+						this.ctx.lineTo(x, y);
+						rot += step;
+					}
+
+					this.ctx.lineTo(cx, cy - outerRadius);
+					this.ctx.closePath();
+					this.ctx.lineWidth = 5;
+					this.ctx.strokeStyle = this.line_color;
+					this.ctx.fill()
+					this.ctx.stroke();
+				}
+				let star_size = this.star_size
+				let star_rote = star_size * 0.4
+				drawStar(300, 300, 5, star_size, star_rote);
+			},
+			change(value) {
+				this.createCtx()
+			}
+		}
+	})
+</script>
+
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+	}
+
+	#canvas {
+		display: block;
+		width: 600px;
+		height: 600px;
+	}
+</style>
